@@ -1,0 +1,3164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Baba Fruit and Juice - Complete shop management system that works offline">
+    <meta name="theme-color" content="#4CAF50">
+    <title>BABA FRUIT AND JUICE</title>
+    
+    <!-- Excel Export Library -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- HTML2Canvas for better PDF rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- PDF Export Library (updated version) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Urdu Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Amiri Font (better for Arabic/Urdu in PDFs) -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- App Icon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🍎</text></svg>">
+    <style>
+        :root {
+            --primary-color: #ff6b35;
+            --secondary-color: #4CAF50;
+            --accent-color: #FFC107;
+            --text-color: #333;
+            --light-bg: #f5f8fa;
+            --card-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            --header-bg: #ff6b35;
+            --fruit-color: #4CAF50;
+            --juice-color: #FF9800;
+            --button-hover: #e55a24;
+            --card-border: #eaeaea;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Noto Nastaliq Urdu', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            max-width: 100%;
+            overflow-x: hidden;
+            padding-bottom: 70px; /* Space for quick actions bar */
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            text-align: center;
+            padding: 1.2rem 0;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .developer-credit {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        h1, h2, h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .container {
+            width: 95%;
+            margin: 0 auto;
+            padding: 0.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--card-border);
+            transition: all 0.2s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.2rem;
+            margin: 0.4rem 0;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-fruit {
+            background-color: var(--fruit-color);
+        }
+
+        .btn-juice {
+            background-color: var(--juice-color);
+        }
+
+        .btn-export {
+            background-color: #2196F3;
+        }
+
+        .btn-add {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .btn-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.4rem 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+        }
+        
+        /* Style for auto-translated fields */
+        input[data-auto-filled="true"] {
+            background-color: #f8f9fa;
+            border-left: 3px solid #4CAF50;
+        }
+        
+        /* Tooltip styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+        }
+        
+        .tooltip {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: normal;
+            font-size: 0.9rem;
+        }
+        
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+        
+        .tooltip-container:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Quick suggestion buttons for inventory */
+        .quick-suggestions {
+            margin: 8px 0;
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            padding: 8px;
+        }
+        
+        .quick-suggestions p {
+            margin: 0 0 5px 0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .suggestion-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .suggestion-btn {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 4px 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .suggestion-btn:hover {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+        
+        .suggestion-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Price quick buttons */
+        .price-input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .quick-price-buttons {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        
+        .quick-price-btn {
+            flex: 1;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .quick-price-btn:hover {
+            background-color: #e5e5e5;
+        }
+        
+        /* Mobile-friendly improvements */
+        @media (max-width: 768px) {
+            .flex-container {
+                flex-direction: column;
+            }
+            
+            .flex-item {
+                flex: 1 1 100%;
+                margin-bottom: 15px;
+            }
+            
+            .btn {
+                padding: 12px;
+                font-size: 16px;
+                height: 50px;
+            }
+            
+            input, select {
+                padding: 12px;
+                font-size: 16px;
+                height: 50px;
+            }
+            
+            .suggestion-btn {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+            
+            .quick-price-btn {
+                padding: 8px;
+                font-size: 14px;
+                height: 40px;
+            }
+            
+            /* Enhanced mobile experience */
+            .card {
+                padding: 15px;
+                margin-bottom: 15px;
+                border-radius: 15px;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .tab {
+                white-space: nowrap;
+                padding: 10px 15px;
+            }
+            
+            table {
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+            }
+            
+            /* Add spacing between interactive elements for better touch targets */
+            .delete-btn, .edit-btn {
+                padding: 8px 12px;
+                margin: 3px;
+            }
+            
+            .quick-actions {
+                padding: 15px 10px;
+            }
+            
+            .quick-action-btn i {
+                font-size: 24px;
+                margin-bottom: 5px;
+            }
+            
+            /* Give more space for touch interactions */
+            #quickAddBtns button {
+                padding: 10px 15px;
+                margin: 5px;
+                min-width: 60px;
+                height: 45px;
+            }
+            
+            /* Larger quantity controls for easier touch */
+            .quantity-control button {
+                width: 50px;
+                height: 50px;
+            }
+            
+            /* Make search buttons easier to tap */
+            .search-bar button {
+                width: 50px;
+                height: 50px;
+            }
+        }
+        
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+
+        table, th, td {
+            border: 1px solid #eaeaea;
+        }
+
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .flex-item {
+            flex: 1 1 300px;
+        }
+
+        .summary-card {
+            background-color: #f5f5f5;
+            border-left: 5px solid var(--primary-color);
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }
+
+        .fruit-summary {
+            border-left-color: var(--fruit-color);
+        }
+
+        .juice-summary {
+            border-left-color: var(--juice-color);
+        }
+
+        .total-summary {
+            border-left-color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .tabs {
+            display: flex;
+            margin: 1rem 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .tab {
+            padding: 0.8rem 1.5rem;
+            background-color: #f2f2f2;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: #e0e0e0;
+        }
+
+        .tab.active {
+            background-color: white;
+            border-top: 3px solid var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background-color: #d32f2f;
+            transform: scale(1.05);
+        }
+        
+        .edit-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-btn:hover {
+            background-color: #0b7dda;
+            transform: scale(1.05);
+        }
+
+        .item-table {
+            margin-top: 1rem;
+            overflow-x: auto;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+            max-width: 90%;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .quick-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 10px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+        
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-color);
+            font-size: 0.8rem;
+            padding: 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action-btn:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .quick-action-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 3px;
+        }
+        
+        .search-bar {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none;
+        }
+        
+        .search-bar button {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            width: auto;
+        }
+        
+        .favorite {
+            color: gold;
+        }
+        
+        /* Common states */
+        .hidden {
+            display: none;
+        }
+
+        /* Sale type badges */
+        .sale-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .fruit-type {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: var(--fruit-color);
+        }
+        
+        .juice-type {
+            background-color: rgba(255, 152, 0, 0.15);
+            color: var(--juice-color);
+        }
+        
+        /* Animations */
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Quick access controls */
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+        }
+        
+        .quantity-controls button {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        /* Mobile-friendly sale form elements */
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+        
+        .quantity-control button {
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .quantity-control input {
+            text-align: center;
+            margin: 0 5px;
+            flex-grow: 1;
+        }
+        
+        .mobile-select {
+            height: 50px;
+            font-size: 16px;
+        }
+        
+        .total-price-display {
+            margin: 15px 0;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .total-price-display input {
+            font-size: 1.3rem;
+            font-weight: bold;
+            background-color: transparent;
+            border: none;
+            text-align: right;
+            color: var(--primary-color);
+            padding: 5px 0;
+        }
+        
+        .sale-action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .sale-action-buttons button {
+            flex: 1;
+            height: 50px;
+            font-size: 1.1rem;
+        }
+        
+        .quick-quantity-buttons {
+            margin: 15px 0;
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .quick-quantity-buttons p {
+            margin: 0 0 8px 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .quantity-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .quantity-buttons button {
+            flex: 1;
+            min-width: 60px;
+            height: 45px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        /* Loading indicator */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Watermark styles */
+        .watermark {
+            position: fixed;
+            bottom: 60px;
+            right: 10px;
+            z-index: 90;
+            opacity: 0.6;
+            font-size: 0.75rem;
+            color: #888;
+            text-align: right;
+            font-style: italic;
+            pointer-events: none;
+        }
+        
+        /* Preview modal styles */
+        #previewReportModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 2000;
+            overflow: auto;
+            padding: 20px;
+            display: none;
+        }
+        
+        #previewReportModal .report-container {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        #closePreviewBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .flex-container {
+                flex-direction: column;
+            }
+            
+            .flex-item {
+                flex: 1 1 100%;
+            }
+            
+            .btn {
+                padding: 1rem;
+                font-size: 1.1rem;
+            }
+            
+            input, select {
+                padding: 1rem;
+                font-size: 1.1rem;
+            }
+            
+            .sales-table-container {
+                overflow-x: auto;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                padding: 0.6rem;
+                font-size: 0.9rem;
+            }
+            
+            .quick-action-btn span {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>BABA FRUIT AND JUICE</h1>
+        <p>بابا فروٹ اینڈ جوس</p>
+        <div id="currentDate" style="font-size: 0.9rem; margin-top: 5px;"></div>
+        <div class="developer-credit">Developed by Hammad Janjua</div>
+        <div class="developer-credit" style="color: #25D366; font-weight: bold;">
+                <svg style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 3px;" viewBox="0 0 448 512">
+                    <path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+                </svg>
+                WhatsApp: +923259964045
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="notification" id="notification">
+            Operation successful!
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="sales">
+                <i class="fas fa-shopping-cart"></i> Sales
+            </button>
+            <button class="tab" data-tab="inventory">
+                <i class="fas fa-box"></i> Inventory
+            </button>
+            <button class="tab" data-tab="reports">
+                <i class="fas fa-chart-bar"></i> Reports
+            </button>
+        </div>
+
+        <div class="tab-content active" id="sales">
+            <div class="flex-container">
+                <div class="flex-item card">
+                    <h2>Add Sale <i class="fas fa-tags"></i></h2>
+                    <div class="flex-container">
+                        <div class="flex-item">
+                            <button id="addFruitSale" class="btn btn-fruit btn-icon">
+                                <i class="fas fa-apple-alt"></i> Add Fruit Sale
+                            </button>
+                        </div>
+                        <div class="flex-item">
+                            <button id="addJuiceSale" class="btn btn-juice btn-icon">
+                                <i class="fas fa-glass-whiskey"></i> Add Juice Sale
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="saleForm" style="display: none; margin-top: 1rem;">
+                        <h3 id="saleFormTitle">Add Sale</h3>
+                        
+                        <div class="search-bar">
+                            <input type="text" id="itemSearchInput" placeholder="Quick search items...">
+                            <button class="btn" id="itemSearchBtn"><i class="fas fa-search"></i></button>
+                        </div>
+                        
+                        <select id="itemSelect" class="mobile-select"></select>
+                        
+                        <div class="flex-container">
+                            <div class="flex-item">
+                                <label for="quantity"><i class="fas fa-weight"></i> Quantity</label>
+                                <div class="quantity-control">
+                                    <button class="btn btn-sm" id="decreaseQty">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" id="quantity" step="0.01" min="0" placeholder="0.5, 1, 2.5">
+                                    <button class="btn btn-sm" id="increaseQty">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex-item">
+                                <label for="unitPrice"><i class="fas fa-tag"></i> Unit Price (Rs)</label>
+                                <input type="number" id="unitPrice" step="0.01" min="0" readonly>
+                            </div>
+                        </div>
+                        
+                        <div id="quickAddBtns" class="quick-quantity-buttons">
+                            <p>Quick quantities:</p>
+                            <div class="quantity-buttons">
+                                <button class="btn btn-sm" data-qty="0.25">0.25</button>
+                                <button class="btn btn-sm" data-qty="0.5">0.5</button>
+                                <button class="btn btn-sm" data-qty="1">1</button>
+                                <button class="btn btn-sm" data-qty="2">2</button>
+                            </div>
+                        </div>
+                        
+                        <div class="total-price-display">
+                            <label for="totalPrice"><i class="fas fa-rupee-sign"></i> Total Price (Rs)</label>
+                            <input type="number" id="totalPrice" readonly>
+                        </div>
+                        
+                        <div class="sale-action-buttons">
+                            <button id="addSaleBtn" class="btn btn-add btn-icon">
+                                <i class="fas fa-plus-circle"></i> Add Sale
+                            </button>
+                            <button id="cancelSaleBtn" class="btn btn-icon" style="background-color: #999;">
+                                <i class="fas fa-times-circle"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-item card">
+                    <h2>Today's Summary <i class="fas fa-chart-line"></i></h2>
+                    <div class="summary-card fruit-summary">
+                        <h3><i class="fas fa-apple-alt"></i> Fruit Sales</h3>
+                        <p><i class="fas fa-shopping-basket"></i> Total Items: <span id="fruitItemsCount">0</span></p>
+                        <p><i class="fas fa-rupee-sign"></i> Total Amount: Rs. <span id="fruitTotal">0.00</span></p>
+                    </div>
+                    <div class="summary-card juice-summary">
+                        <h3><i class="fas fa-glass-whiskey"></i> Juice Sales</h3>
+                        <p><i class="fas fa-shopping-basket"></i> Total Items: <span id="juiceItemsCount">0</span></p>
+                        <p><i class="fas fa-rupee-sign"></i> Total Amount: Rs. <span id="juiceTotal">0.00</span></p>
+                    </div>
+                    <div class="summary-card total-summary">
+                        <h3><i class="fas fa-calculator"></i> Grand Total</h3>
+                        <p><i class="fas fa-shopping-cart"></i> Total Sales: <span id="totalSales">0</span></p>
+                        <p><i class="fas fa-rupee-sign"></i> Total Amount: Rs. <span id="grandTotal" style="font-size: 1.2rem; font-weight: bold;">0.00</span></p>
+                    </div>
+                    
+                    <button id="quickExportBtn" class="btn btn-export btn-icon" style="margin-top: 1rem;">
+                        <i class="fas fa-file-export"></i> Quick Export Today's Report
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Today's Sales <i class="fas fa-receipt"></i></h2>
+                
+                <div class="search-bar">
+                    <input type="text" id="salesSearchInput" placeholder="Search sales...">
+                    <button class="btn" id="salesSearchBtn"><i class="fas fa-search"></i></button>
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab active" data-sales-tab="all">
+                        <i class="fas fa-list"></i> All Sales
+                    </button>
+                    <button class="tab" data-sales-tab="fruit">
+                        <i class="fas fa-apple-alt"></i> Fruits
+                    </button>
+                    <button class="tab" data-sales-tab="juice">
+                        <i class="fas fa-glass-whiskey"></i> Juices
+                    </button>
+                </div>
+                <div class="sales-table-container">
+                    <table id="salesTable">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-clock"></i> Time</th>
+                                <th><i class="fas fa-tag"></i> Item</th>
+                                <th><i class="fas fa-layer-group"></i> Type</th>
+                                <th><i class="fas fa-weight"></i> Quantity</th>
+                                <th><i class="fas fa-tag"></i> Unit Price</th>
+                                <th><i class="fas fa-rupee-sign"></i> Total</th>
+                                <th><i class="fas fa-cog"></i> Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTableBody"></tbody>
+                    </table>
+                </div>
+                
+                <div id="noSalesMessage" class="hidden" style="text-align: center; padding: 2rem; color: #666;">
+                    <i class="fas fa-shopping-cart" style="font-size: 3rem; margin-bottom: 1rem; color: #ccc;"></i>
+                    <p>No sales recorded today. Add your first sale!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="inventory">
+            <div class="card">
+                <h2>Inventory Management</h2>
+                <div class="flex-container">
+                    <div class="flex-item">
+                        <h3>Add New Item</h3>
+                        <select id="itemType">
+                            <option value="fruit">Fruit (پھل)</option>
+                            <option value="juice">Juice (رس)</option>
+                        </select>
+                        <div class="flex-container">
+                            <div class="flex-item">
+                                <label for="itemNameEn">English Name</label>
+                                <input type="text" id="itemNameEn" placeholder="e.g., Apple">
+                                <div class="quick-suggestions" id="commonFruitBtns">
+                                    <p>Quick Add Common Fruits:</p>
+                                    <div class="suggestion-buttons">
+                                        <button type="button" class="suggestion-btn" data-name="Apple">Apple</button>
+                                        <button type="button" class="suggestion-btn" data-name="Banana">Banana</button>
+                                        <button type="button" class="suggestion-btn" data-name="Orange">Orange</button>
+                                        <button type="button" class="suggestion-btn" data-name="Mango">Mango</button>
+                                        <button type="button" class="suggestion-btn" data-name="Grapes">Grapes</button>
+                                    </div>
+                                </div>
+                                <div class="quick-suggestions" id="commonJuiceBtns" style="display: none;">
+                                    <p>Quick Add Common Juices:</p>
+                                    <div class="suggestion-buttons">
+                                        <button type="button" class="suggestion-btn" data-name="Orange Juice">Orange</button>
+                                        <button type="button" class="suggestion-btn" data-name="Apple Juice">Apple</button>
+                                        <button type="button" class="suggestion-btn" data-name="Mango Juice">Mango</button>
+                                        <button type="button" class="suggestion-btn" data-name="Mixed Fruit Juice">Mix</button>
+                                        <button type="button" class="suggestion-btn" data-name="Sugarcane Juice">Sugarcane</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-item">
+                                <label for="itemNameUr">
+                                    Urdu Name 
+                                    <span class="tooltip-container">
+                                        <i class="fas fa-info-circle" style="color: #2196F3; cursor: help;"></i>
+                                        <span class="tooltip">
+                                            Will auto-translate from English if left empty or you can type your own translation
+                                        </span>
+                                    </span>
+                                </label>
+                                <input type="text" id="itemNameUr" placeholder="e.g., سیب">
+                            </div>
+                        </div>
+                        <div class="flex-container">
+                            <div class="flex-item">
+                                <label for="itemUnit">Unit</label>
+                                <select id="itemUnit">
+                                    <option value="kg">Kg (کلو)</option>
+                                    <option value="dozen">Dozen (درجن)</option>
+                                    <option value="piece">Piece (عدد)</option>
+                                    <option value="glass">Glass (گلاس)</option>
+                                </select>
+                            </div>
+                            <div class="flex-item">
+                                <label for="itemPrice">Price per Unit (Rs)</label>
+                                <div class="price-input-group">
+                                    <input type="number" id="itemPrice" step="0.01" min="0" placeholder="e.g., 150">
+                                    <div class="quick-price-buttons">
+                                        <button type="button" class="quick-price-btn" data-price="50">₨50</button>
+                                        <button type="button" class="quick-price-btn" data-price="100">₨100</button>
+                                        <button type="button" class="quick-price-btn" data-price="150">₨150</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="addItemBtn" class="btn btn-add">
+                            <i class="fas fa-plus-circle"></i> Add New Item
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tabs" style="margin-top: 2rem;">
+                    <button class="tab active" data-inventory-tab="fruit">Fruits</button>
+                    <button class="tab" data-inventory-tab="juice">Juices</button>
+                </div>
+                
+                <div id="fruitInventory" class="item-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Urdu Name</th>
+                                <th>Unit</th>
+                                <th>Price (Rs)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fruitTableBody"></tbody>
+                    </table>
+                </div>
+                
+                <div id="juiceInventory" class="item-table" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Urdu Name</th>
+                                <th>Unit</th>
+                                <th>Price (Rs)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="juiceTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="reports">
+            <div class="card">
+                <h2>Reports <i class="fas fa-file-export"></i></h2>
+                <div class="flex-container">
+                    <div class="flex-item">
+                        <h3>Export Today's Report</h3>
+                        <p>Generate and download a report for today's sales.</p>
+                        <button id="exportExcelBtn" class="btn btn-export btn-icon">
+                            <i class="fas fa-file-excel"></i> Export to Excel
+                        </button>
+                        <button id="exportPdfBtn" class="btn btn-export btn-icon">
+                            <i class="fas fa-file-pdf"></i> Export to PDF
+                        </button>
+                        
+                        <div style="margin-top: 20px;">
+                            <h3>Report Preview</h3>
+                            <p>Click below to view a preview of your report:</p>
+                            <button id="previewReportBtn" class="btn btn-export btn-icon">
+                                <i class="fas fa-eye"></i> Preview Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Watermark -->
+    <div class="watermark">
+        <p>Created by Hammad Janjua</p>
+    </div>
+
+    <!-- Quick Action Bar at Bottom -->
+    <div class="quick-actions">
+        <button class="quick-action-btn" id="quickAddFruit">
+            <i class="fas fa-apple-alt" style="color: var(--fruit-color);"></i>
+            <span>Add Fruit</span>
+        </button>
+        <button class="quick-action-btn" id="quickAddJuice">
+            <i class="fas fa-glass-whiskey" style="color: var(--juice-color);"></i>
+            <span>Add Juice</span>
+        </button>
+        <button class="quick-action-btn" id="quickInventory">
+            <i class="fas fa-box"></i>
+            <span>Inventory</span>
+        </button>
+        <button class="quick-action-btn" id="quickExport">
+            <i class="fas fa-file-export" style="color: #2196F3;"></i>
+            <span>Export</span>
+        </button>
+        <button class="quick-action-btn" id="quickSettings">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </button>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settingsModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="background: white; width: 90%; max-width: 500px; margin: 20% auto; padding: 1.5rem; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <h2>Settings <i class="fas fa-cog"></i></h2>
+            <hr style="margin: 1rem 0;">
+            
+            <div style="margin: 1rem 0;">
+                <h3>Display</h3>
+                <label style="display: flex; align-items: center; margin: 10px 0;">
+                    <input type="checkbox" id="settingDarkMode" style="width: auto; margin-right: 10px;">
+                    Dark Mode (Coming Soon)
+                </label>
+                <label style="display: flex; align-items: center; margin: 10px 0;">
+                    <input type="checkbox" id="settingLargeText" style="width: auto; margin-right: 10px;">
+                    Larger Text
+                </label>
+            </div>
+            
+            <div style="margin: 1rem 0;">
+                <h3>Backup & Reset</h3>
+                <button id="backupDataBtn" class="btn btn-export" style="margin-bottom: 0.5rem; width: 100%;">
+                    <i class="fas fa-download"></i> Backup Data
+                </button>
+                <div style="display: flex; gap: 10px; margin-bottom: 0.5rem;">
+                    <button id="restoreLocalBtn" class="btn" style="background-color: #4CAF50; flex: 1;">
+                        <i class="fas fa-undo"></i> Restore Local Backup
+                    </button>
+                    <button id="restoreFileBtn" class="btn" style="background-color: #2196F3; flex: 1;">
+                        <i class="fas fa-file-upload"></i> Restore From File
+                    </button>
+                </div>
+                <button id="resetDataBtn" class="btn" style="background-color: #f44336; margin-bottom: 0.5rem; width: 100%;">
+                    <i class="fas fa-trash-alt"></i> Reset All Data
+                </button>
+                <div style="background-color: #f8f8f8; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <span style="background-color: #4CAF50; width: 12px; height: 12px; display: inline-block; border-radius: 50%; margin-right: 5px;"></span>
+                        <strong id="offlineStatus">Offline Mode Available</strong>
+                    </div>
+                    <small>This app works fully offline. Data is saved locally in your browser.</small>
+                </div>
+            </div>
+            
+            <button id="closeSettingsBtn" class="btn" style="margin-top: 1rem;">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Create inline service worker from blob
+        const serviceWorkerBlob = new Blob([`
+            // Baba Fruit and Juice Service Worker
+            const CACHE_NAME = 'baba-fruit-juice-v1';
+            const ASSETS_TO_CACHE = [
+                './',
+                // External dependencies to cache
+                'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                'https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap',
+                'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap',
+                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+            ];
+
+            // Install event - cache assets
+            self.addEventListener('install', event => {
+                event.waitUntil(
+                    caches.open(CACHE_NAME)
+                    .then(cache => {
+                        console.log('Caching app assets');
+                        return cache.addAll(ASSETS_TO_CACHE);
+                    })
+                    .then(() => self.skipWaiting())
+                );
+            });
+
+            // Activate event - clean up old caches
+            self.addEventListener('activate', event => {
+                event.waitUntil(
+                    caches.keys().then(cacheNames => {
+                        return Promise.all(
+                            cacheNames.filter(cacheName => {
+                                return cacheName !== CACHE_NAME;
+                            }).map(cacheName => {
+                                console.log('Deleting old cache:', cacheName);
+                                return caches.delete(cacheName);
+                            })
+                        );
+                    }).then(() => self.clients.claim())
+                );
+            });
+
+            // Fetch event - serve from cache, fall back to network
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    caches.match(event.request)
+                    .then(response => {
+                        if (response) {
+                            return response; // Return cached response
+                        }
+                        
+                        // Clone the request
+                        const fetchRequest = event.request.clone();
+                        
+                        // Try to fetch from network
+                        return fetch(fetchRequest)
+                        .then(response => {
+                            // Check if response is valid
+                            if (!response || response.status !== 200 || response.type !== 'basic') {
+                                return response;
+                            }
+                            
+                            // Clone the response
+                            const responseToCache = response.clone();
+                            
+                            // Cache the fetched response
+                            caches.open(CACHE_NAME)
+                            .then(cache => {
+                                cache.put(event.request, responseToCache);
+                            });
+                                
+                            return response;
+                        })
+                        .catch(() => {
+                            // Fallback for when network is unavailable
+                            console.log('Network request failed, no cache available for:', event.request.url);
+                        });
+                    })
+                );
+            });
+        `], { type: 'application/javascript' });
+
+        // Create object URL for the service worker
+        const serviceWorkerURL = URL.createObjectURL(serviceWorkerBlob);
+
+        // Register Service Worker from Blob URL
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register(serviceWorkerURL)
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(error => {
+                    console.error('Service Worker registration failed:', error);
+                });
+            });
+        }
+        
+        // Create and register manifest from inline JSON
+        if ('serviceWorker' in navigator) {
+            const manifestElement = document.getElementById('app-manifest');
+            if (manifestElement) {
+                try {
+                    const manifestJSON = JSON.parse(manifestElement.textContent);
+                    const manifestBlob = new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'});
+                    const manifestURL = URL.createObjectURL(manifestBlob);
+                    
+                    // Create a link element for the manifest
+                    const linkElement = document.createElement('link');
+                    linkElement.rel = 'manifest';
+                    linkElement.href = manifestURL;
+                    document.head.appendChild(linkElement);
+                } catch (e) {
+                    console.error('Failed to parse manifest JSON:', e);
+                }
+            }
+        }
+
+        // Check online status
+        let isOnline = navigator.onLine;
+        
+        window.addEventListener('online', function() {
+            isOnline = true;
+            showNotification('Internet connection restored. Application running normally.', 'success', 3000);
+        });
+        
+        window.addEventListener('offline', function() {
+            isOnline = false;
+            showNotification('No internet connection. Application running in offline mode.', 'warning', 5000);
+        });
+        
+        // Global variables
+        let currentItemType = null;
+        let inventory = {
+            fruit: [],
+            juice: []
+        };
+        let sales = [];
+        let salesFilter = 'all';
+        let inventoryTab = 'fruit';
+        
+        // Translation mapping for common fruits and juices
+        const fruitTranslations = {
+            "apple": "سیب",
+            "banana": "کیلا",
+            "orange": "مالٹا",
+            "mango": "آم",
+            "watermelon": "تربوز",
+            "melon": "خربوزہ",
+            "grapes": "انگور",
+            "pomegranate": "انار",
+            "guava": "امرود",
+            "peach": "آڑو",
+            "pear": "ناشپاتی",
+            "pineapple": "انناس",
+            "strawberry": "سٹرابیری",
+            "cherry": "چیری",
+            "plum": "آلو بخارا",
+            "apricot": "خوبانی",
+            "fig": "انجیر",
+            "lemon": "لیموں",
+            "lime": "نمبو",
+            "grapefruit": "گریپ فروٹ",
+            "papaya": "پپیتا",
+            "lychee": "لیچی",
+            "coconut": "ناریل",
+            "date": "کھجور"
+        };
+        
+        const juiceTranslations = {
+            "orange juice": "مالٹے کا جوس",
+            "apple juice": "سیب کا جوس",
+            "mango juice": "آم کا جوس",
+            "mixed fruit juice": "مکس فروٹ جوس",
+            "watermelon juice": "تربوز کا جوس",
+            "pomegranate juice": "انار کا جوس",
+            "grape juice": "انگور کا جوس",
+            "pineapple juice": "انناس کا جوس",
+            "strawberry juice": "سٹرابیری کا جوس",
+            "lemon juice": "لیموں کا جوس",
+            "sugarcane juice": "گنے کا رس",
+            "carrot juice": "گاجر کا جوس",
+            "banana shake": "کیلے کا شیک"
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+            updateCurrentDate();
+            checkForLargeTextSetting();
+            setupQuickAccessActions();
+        });
+
+        // Check if it's a new day
+        function checkNewDay() {
+            const today = new Date().toLocaleDateString();
+            const lastAccess = localStorage.getItem('lastAccessDate');
+            
+            if (lastAccess && lastAccess !== today) {
+                // It's a new day - export yesterday's report and reset
+                const yesterdaySales = JSON.parse(localStorage.getItem('sales') || '[]');
+                
+                if (yesterdaySales.length > 0) {
+                    // Export yesterday's report automatically
+                    exportToExcel(true, lastAccess);
+                    
+                    // Reset sales for new day
+                    sales = [];
+                    localStorage.setItem('sales', JSON.stringify(sales));
+                    
+                    showNotification("New day detected! Yesterday's report exported and new day started.");
+                }
+                
+                // Check if it's been 7 days since last backup
+                const lastBackup = localStorage.getItem('lastBackupDate') || '';
+                const lastBackupDate = lastBackup ? new Date(lastBackup) : new Date(0);
+                const daysSinceBackup = Math.floor((new Date() - lastBackupDate) / (1000 * 60 * 60 * 24));
+                
+                if (daysSinceBackup >= 7) {
+                    // Show backup reminder
+                    setTimeout(() => {
+                        if (confirm('It\'s been 7 days since your last data backup. Would you like to backup your data now?')) {
+                            backupData();
+                            localStorage.setItem('lastBackupDate', new Date().toISOString());
+                        }
+                    }, 1000);
+                }
+            }
+            
+            // Update last access date
+            localStorage.setItem('lastAccessDate', today);
+        }
+
+        // Initialize the application with default data and load from localStorage
+        function initializeApp() {
+            // Default fruit inventory
+            const defaultFruits = [
+                { id: 'f1', name: 'Apple', nameUr: 'سیب', unit: 'kg', price: 200 },
+                { id: 'f2', name: 'Banana', nameUr: 'کیلا', unit: 'dozen', price: 120 },
+                { id: 'f3', name: 'Orange', nameUr: 'مالٹا', unit: 'kg', price: 180 },
+                { id: 'f4', name: 'Mango', nameUr: 'آم', unit: 'kg', price: 250 },
+                { id: 'f5', name: 'Watermelon', nameUr: 'تربوز', unit: 'piece', price: 300 }
+            ];
+            
+            // Default juice inventory
+            const defaultJuices = [
+                { id: 'j1', name: 'Orange Juice', nameUr: 'مالٹے کا جوس', unit: 'glass', price: 80 },
+                { id: 'j2', name: 'Apple Juice', nameUr: 'سیب کا جوس', unit: 'glass', price: 90 },
+                { id: 'j3', name: 'Mango Juice', nameUr: 'آم کا جوس', unit: 'glass', price: 100 },
+                { id: 'j4', name: 'Mixed Fruit Juice', nameUr: 'مکس فروٹ جوس', unit: 'glass', price: 120 }
+            ];
+
+            // Load inventory from localStorage or use defaults
+            const savedFruits = localStorage.getItem('fruitInventory');
+            inventory.fruit = savedFruits ? JSON.parse(savedFruits) : defaultFruits;
+
+            const savedJuices = localStorage.getItem('juiceInventory');
+            inventory.juice = savedJuices ? JSON.parse(savedJuices) : defaultJuices;
+            
+            // Save defaults if first time
+            if (!savedFruits) localStorage.setItem('fruitInventory', JSON.stringify(inventory.fruit));
+            if (!savedJuices) localStorage.setItem('juiceInventory', JSON.stringify(inventory.juice));
+
+            // Load sales from localStorage
+            const savedSales = localStorage.getItem('sales');
+            sales = savedSales ? JSON.parse(savedSales) : [];
+
+            // Check for new day
+            checkNewDay();
+
+            // Update UI
+            updateInventoryTables();
+            updateSalesTable();
+            updateSummary();
+        }
+
+        // Update current date display
+        function updateCurrentDate() {
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = today.toLocaleDateString(undefined, options);
+        }
+        
+        // Apply large text setting if enabled
+        function checkForLargeTextSetting() {
+            const largeText = localStorage.getItem('largeTextEnabled');
+            if (largeText === 'true') {
+                document.body.style.fontSize = '1.1rem';
+                document.getElementById('settingLargeText').checked = true;
+            }
+        }
+        
+        // Set up event listeners for all UI interactions
+        function setupEventListeners() {
+            // Main tab navigation
+            document.querySelectorAll('.tab[data-tab]').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Deactivate all tabs and contents
+                    document.querySelectorAll('.tab[data-tab]').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Activate selected tab and content
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // Sales tab filtering
+            document.querySelectorAll('.tab[data-sales-tab]').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabType = this.getAttribute('data-sales-tab');
+                    salesFilter = tabType;
+                    
+                    // Update active tab
+                    document.querySelectorAll('.tab[data-sales-tab]').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update sales table with filter
+                    updateSalesTable();
+                });
+            });
+
+            // Inventory tab filtering
+            document.querySelectorAll('.tab[data-inventory-tab]').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabType = this.getAttribute('data-inventory-tab');
+                    inventoryTab = tabType;
+                    
+                    // Update active tab
+                    document.querySelectorAll('.tab[data-inventory-tab]').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show/hide appropriate inventory tables
+                    document.getElementById('fruitInventory').style.display = tabType === 'fruit' ? 'block' : 'none';
+                    document.getElementById('juiceInventory').style.display = tabType === 'juice' ? 'block' : 'none';
+                });
+            });
+
+            // Add Fruit Sale button
+            document.getElementById('addFruitSale').addEventListener('click', function() {
+                showSaleForm('fruit');
+            });
+
+            // Add Juice Sale button
+            document.getElementById('addJuiceSale').addEventListener('click', function() {
+                showSaleForm('juice');
+            });
+
+            // Cancel Sale button
+            document.getElementById('cancelSaleBtn').addEventListener('click', function() {
+                document.getElementById('saleForm').style.display = 'none';
+            });
+
+            // Item selection change - update unit price
+            document.getElementById('itemSelect').addEventListener('change', function() {
+                updateUnitPrice();
+                updateTotalPrice();
+            });
+
+            // Quantity change - update total price
+            document.getElementById('quantity').addEventListener('input', function() {
+                updateTotalPrice();
+            });
+            
+            // Quantity increment/decrement buttons
+            document.getElementById('decreaseQty').addEventListener('click', function() {
+                const input = document.getElementById('quantity');
+                const currentValue = parseFloat(input.value) || 0;
+                if (currentValue > 0) {
+                    if (currentItemType === 'juice') {
+                        // Use integer steps for juice
+                        input.value = Math.max(1, Math.floor(currentValue - 1));
+                    } else {
+                        // Use decimal steps for fruit
+                        input.value = Math.max(0, (currentValue - 0.25)).toFixed(2);
+                    }
+                    updateTotalPrice();
+                }
+            });
+            
+            document.getElementById('increaseQty').addEventListener('click', function() {
+                const input = document.getElementById('quantity');
+                const currentValue = parseFloat(input.value) || 0;
+                if (currentItemType === 'juice') {
+                    // Use integer steps for juice
+                    input.value = Math.floor(currentValue + 1);
+                } else {
+                    // Use decimal steps for fruit
+                    input.value = (currentValue + 0.25).toFixed(2);
+                }
+                updateTotalPrice();
+            });
+            
+            // Quick quantity buttons
+            document.querySelectorAll('#quickAddBtns button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const qty = parseFloat(this.getAttribute('data-qty'));
+                    document.getElementById('quantity').value = qty;
+                    updateTotalPrice();
+                });
+            });
+
+            // Add Sale button
+            document.getElementById('addSaleBtn').addEventListener('click', function() {
+                addSale();
+            });
+
+            // Add Item button
+            document.getElementById('addItemBtn').addEventListener('click', function() {
+                addNewItem();
+            });
+
+            // Export to Excel button
+            document.getElementById('exportExcelBtn').addEventListener('click', function() {
+                exportToExcel();
+            });
+
+            // Export to PDF button
+            document.getElementById('exportPdfBtn').addEventListener('click', function() {
+                exportToPDF();
+            });
+            
+            // Preview Report button
+            document.getElementById('previewReportBtn').addEventListener('click', function() {
+                previewReport();
+            });
+            
+            // Quick Export button on summary card
+            document.getElementById('quickExportBtn').addEventListener('click', function() {
+                exportToExcel();
+            });
+            
+            // Sales search
+            document.getElementById('salesSearchBtn').addEventListener('click', function() {
+                filterSalesTable();
+            });
+            
+            document.getElementById('salesSearchInput').addEventListener('input', function() {
+                filterSalesTable();
+            });
+            
+            // Item search in sale form
+            document.getElementById('itemSearchInput').addEventListener('input', function() {
+                filterItemSelect();
+            });
+            
+            // Settings modal
+            document.getElementById('quickSettings').addEventListener('click', function() {
+                document.getElementById('settingsModal').style.display = 'block';
+            });
+            
+            document.getElementById('closeSettingsBtn').addEventListener('click', function() {
+                document.getElementById('settingsModal').style.display = 'none';
+            });
+            
+            // Auto-translate when typing in English name field
+            document.getElementById('itemNameEn').addEventListener('input', function() {
+                const type = document.getElementById('itemType').value;
+                const nameEn = this.value.trim();
+                const nameUrField = document.getElementById('itemNameUr');
+                
+                // Only auto-translate if Urdu field is empty or hasn't been manually edited
+                if (!nameUrField.value || nameUrField.dataset.autoFilled) {
+                    const translation = autoTranslate(nameEn, type);
+                    if (translation) {
+                        nameUrField.value = translation;
+                        nameUrField.dataset.autoFilled = 'true';
+                    }
+                }
+            });
+            
+            // Track if user manually edits the Urdu field
+            document.getElementById('itemNameUr').addEventListener('input', function() {
+                // If user types in Urdu field, mark it as manually edited
+                delete this.dataset.autoFilled;
+            });
+            
+            // Update translation when item type changes
+            document.getElementById('itemType').addEventListener('change', function() {
+                const type = this.value;
+                const nameEn = document.getElementById('itemNameEn').value.trim();
+                const nameUrField = document.getElementById('itemNameUr');
+                
+                // Show appropriate quick suggestion buttons based on item type
+                if (type === 'fruit') {
+                    document.getElementById('commonFruitBtns').style.display = 'block';
+                    document.getElementById('commonJuiceBtns').style.display = 'none';
+                } else {
+                    document.getElementById('commonFruitBtns').style.display = 'none';
+                    document.getElementById('commonJuiceBtns').style.display = 'block';
+                }
+                
+                // Update unit dropdown based on item type
+                const unitDropdown = document.getElementById('itemUnit');
+                if (type === 'juice') {
+                    // Set default to glass for juices
+                    for (let i = 0; i < unitDropdown.options.length; i++) {
+                        if (unitDropdown.options[i].value === 'glass') {
+                            unitDropdown.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+                
+                if (nameEn && (nameUrField.dataset.autoFilled || !nameUrField.value)) {
+                    const translation = autoTranslate(nameEn, type);
+                    if (translation) {
+                        nameUrField.value = translation;
+                        nameUrField.dataset.autoFilled = 'true';
+                    }
+                }
+            });
+            
+            // Setup quick suggestion buttons for fruit and juice names
+            document.querySelectorAll('.suggestion-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const name = this.getAttribute('data-name');
+                    document.getElementById('itemNameEn').value = name;
+                    
+                    // Trigger auto-translation
+                    const type = document.getElementById('itemType').value;
+                    const nameUrField = document.getElementById('itemNameUr');
+                    const translation = autoTranslate(name, type);
+                    if (translation) {
+                        nameUrField.value = translation;
+                        nameUrField.dataset.autoFilled = 'true';
+                    }
+                });
+            });
+            
+            // Setup quick price buttons
+            document.querySelectorAll('.quick-price-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const price = this.getAttribute('data-price');
+                    document.getElementById('itemPrice').value = price;
+                });
+            });
+            
+            // Large text setting
+            document.getElementById('settingLargeText').addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.style.fontSize = '1.1rem';
+                    localStorage.setItem('largeTextEnabled', 'true');
+                } else {
+                    document.body.style.fontSize = '';
+                    localStorage.setItem('largeTextEnabled', 'false');
+                }
+            });
+            
+            // Backup data
+            document.getElementById('backupDataBtn').addEventListener('click', function() {
+                backupData();
+            });
+            
+            // Reset data
+            document.getElementById('resetDataBtn').addEventListener('click', function() {
+                if (confirm('Are you sure you want to reset all data? This cannot be undone!')) {
+                    resetAllData();
+                }
+            });
+            
+            // Restore local backup
+            document.getElementById('restoreLocalBtn').addEventListener('click', function() {
+                restoreBackup('local');
+            });
+            
+            // Restore from file
+            document.getElementById('restoreFileBtn').addEventListener('click', function() {
+                restoreBackup('file');
+            });
+            
+            // Update offline status indicator
+            function updateOfflineStatus() {
+                const statusElement = document.getElementById('offlineStatus');
+                if (statusElement) {
+                    statusElement.textContent = navigator.onLine ? 
+                        'Online - Offline Mode Available' : 
+                        'Currently Offline - Working Locally';
+                    
+                    // Update the status dot color
+                    const parentDiv = statusElement.parentElement;
+                    const statusDot = parentDiv.querySelector('span');
+                    if (statusDot) {
+                        statusDot.style.backgroundColor = navigator.onLine ? '#4CAF50' : '#FF9800';
+                    }
+                }
+            }
+            
+            // Initial call and set up listeners
+            updateOfflineStatus();
+            window.addEventListener('online', updateOfflineStatus);
+            window.addEventListener('offline', updateOfflineStatus);
+        }
+        
+        // Set up quick access buttons
+        function setupQuickAccessActions() {
+            document.getElementById('quickAddFruit').addEventListener('click', function() {
+                // Switch to sales tab if not already there
+                activateTab('sales');
+                showSaleForm('fruit');
+            });
+            
+            document.getElementById('quickAddJuice').addEventListener('click', function() {
+                activateTab('sales');
+                showSaleForm('juice');
+            });
+            
+            document.getElementById('quickInventory').addEventListener('click', function() {
+                activateTab('inventory');
+            });
+            
+            document.getElementById('quickExport').addEventListener('click', function() {
+                activateTab('reports');
+            });
+        }
+        
+        // Activate a specific tab
+        function activateTab(tabId) {
+            // Deactivate all tabs and contents
+            document.querySelectorAll('.tab[data-tab]').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Activate selected tab and content
+            document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+        
+        // Filter sales table based on search input
+        function filterSalesTable() {
+            const searchTerm = document.getElementById('salesSearchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#salesTableBody tr');
+            
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Show/hide no sales message
+            document.getElementById('noSalesMessage').classList.toggle('hidden', visibleCount > 0);
+        }
+        
+        // Filter item select dropdown based on search input
+        function filterItemSelect() {
+            const searchTerm = document.getElementById('itemSearchInput').value.toLowerCase();
+            const select = document.getElementById('itemSelect');
+            const options = select.options;
+            
+            // Store the current selection
+            const currentSelection = select.value;
+            
+            // Clear select
+            select.innerHTML = '';
+            
+            // Get items of current type
+            const items = inventory[currentItemType];
+            
+            // Filter and add matching items
+            items.filter(item => 
+                item.name.toLowerCase().includes(searchTerm) || 
+                item.nameUr.includes(searchTerm)
+            ).forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = `${item.name} (${item.nameUr}) - ${item.price} Rs/${item.unit}`;
+                select.appendChild(option);
+            });
+            
+            // Try to restore selection if it still exists
+            if (Array.from(options).some(opt => opt.value === currentSelection)) {
+                select.value = currentSelection;
+            }
+            
+            // Update price fields
+            updateUnitPrice();
+            updateTotalPrice();
+        }
+        
+        // Backup all data to a JSON file and localStorage
+        function backupData() {
+            try {
+                // Collect all data
+                const data = {
+                    fruitInventory: inventory.fruit,
+                    juiceInventory: inventory.juice,
+                    sales: sales,
+                    lastAccessDate: localStorage.getItem('lastAccessDate'),
+                    timestamp: new Date().toISOString(),
+                    version: '1.0',
+                    settings: {
+                        largeTextEnabled: localStorage.getItem('largeTextEnabled') === 'true'
+                    }
+                };
+                
+                // Store backup in localStorage with timestamp
+                const backupKey = `backup_${new Date().toISOString().split('T')[0]}`;
+                localStorage.setItem(backupKey, JSON.stringify(data));
+                
+                // Keep track of backups
+                let backupList = JSON.parse(localStorage.getItem('backup_list') || '[]');
+                backupList.push(backupKey);
+                
+                // Keep only last 5 backups to avoid storage limits
+                if (backupList.length > 5) {
+                    const oldestBackup = backupList.shift();
+                    localStorage.removeItem(oldestBackup);
+                }
+                localStorage.setItem('backup_list', JSON.stringify(backupList));
+                
+                // Update last backup date
+                localStorage.setItem('lastBackupDate', new Date().toISOString());
+                
+                // Convert to JSON for file download
+                const jsonString = JSON.stringify(data, null, 2);
+                
+                // Create file for download
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                // Create download link
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `BabaFruitJuice_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                
+                // Trigger download
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification('Data backup successful both locally and as downloadable file!');
+            } catch (error) {
+                console.error('Backup error:', error);
+                showNotification('Backup failed! ' + error.message, 'error');
+            }
+        }
+        
+        // Restore from a backup file or localStorage backup
+        function restoreBackup(backupSource = 'local') {
+            try {
+                if (backupSource === 'local') {
+                    // Get list of available backups from localStorage
+                    const backupList = JSON.parse(localStorage.getItem('backup_list') || '[]');
+                    
+                    if (backupList.length === 0) {
+                        showNotification('No local backups available', 'error');
+                        return;
+                    }
+                    
+                    // Get the most recent backup
+                    const latestBackup = backupList[backupList.length - 1];
+                    const backupData = JSON.parse(localStorage.getItem(latestBackup));
+                    
+                    if (!backupData) {
+                        showNotification('Backup data is corrupted or missing', 'error');
+                        return;
+                    }
+                    
+                    // Confirm restoration
+                    if (confirm(`Restore from backup created on ${new Date(backupData.timestamp).toLocaleString()}?`)) {
+                        // Restore the data
+                        inventory.fruit = backupData.fruitInventory || [];
+                        inventory.juice = backupData.juiceInventory || [];
+                        sales = backupData.sales || [];
+                        
+                        // Save to localStorage
+                        localStorage.setItem('fruitInventory', JSON.stringify(inventory.fruit));
+                        localStorage.setItem('juiceInventory', JSON.stringify(inventory.juice));
+                        localStorage.setItem('sales', JSON.stringify(sales));
+                        
+                        // Update UI
+                        updateInventoryTables();
+                        updateSalesTable();
+                        updateSummary();
+                        
+                        showNotification('Backup restored successfully!');
+                    }
+                } else if (backupSource === 'file') {
+                    // Create file input element
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = 'application/json';
+                    
+                    fileInput.onchange = function(e) {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const backupData = JSON.parse(e.target.result);
+                                
+                                // Basic validation
+                                if (!backupData.fruitInventory || !backupData.juiceInventory) {
+                                    throw new Error('Invalid backup file format');
+                                }
+                                
+                                // Restore the data
+                                inventory.fruit = backupData.fruitInventory;
+                                inventory.juice = backupData.juiceInventory;
+                                sales = backupData.sales || [];
+                                
+                                // Save to localStorage
+                                localStorage.setItem('fruitInventory', JSON.stringify(inventory.fruit));
+                                localStorage.setItem('juiceInventory', JSON.stringify(inventory.juice));
+                                localStorage.setItem('sales', JSON.stringify(sales));
+                                
+                                // Update UI
+                                updateInventoryTables();
+                                updateSalesTable();
+                                updateSummary();
+                                
+                                showNotification('Backup file restored successfully!');
+                            } catch (error) {
+                                console.error('Restore error:', error);
+                                showNotification('Failed to restore from file: ' + error.message, 'error');
+                            }
+                        };
+                        reader.readAsText(file);
+                    };
+                    
+                    // Trigger file selection
+                    fileInput.click();
+                }
+            } catch (error) {
+                console.error('Restore error:', error);
+                showNotification('Backup restoration failed: ' + error.message, 'error');
+            }
+        }
+        
+        // Reset all data to defaults
+        function resetAllData() {
+            // Clear localStorage
+            localStorage.removeItem('fruitInventory');
+            localStorage.removeItem('juiceInventory');
+            localStorage.removeItem('sales');
+            
+            // Keep settings
+            const largeTextSetting = localStorage.getItem('largeTextEnabled');
+            
+            // Clear everything else
+            localStorage.clear();
+            
+            // Restore settings
+            if (largeTextSetting) {
+                localStorage.setItem('largeTextEnabled', largeTextSetting);
+            }
+            
+            // Reload the page
+            showNotification('All data has been reset. Reloading...');
+            setTimeout(() => window.location.reload(), 1500);
+        }
+
+        // Show sale form with appropriate items
+        function showSaleForm(itemType) {
+            currentItemType = itemType;
+            
+            // Update form title
+            document.getElementById('saleFormTitle').textContent = 
+                itemType === 'fruit' ? 'Add Fruit Sale' : 'Add Juice Sale';
+            
+            // Reset search field
+            document.getElementById('itemSearchInput').value = '';
+            
+            // Populate item select with appropriate inventory items
+            const itemSelect = document.getElementById('itemSelect');
+            itemSelect.innerHTML = '';
+            
+            // Check if we have items
+            if (inventory[itemType].length === 0) {
+                showNotification(`No ${itemType}s in inventory. Please add some first.`, 'error');
+                
+                // Switch to inventory tab
+                setTimeout(() => {
+                    activateTab('inventory');
+                    document.getElementById('itemType').value = itemType;
+                }, 1500);
+                
+                return;
+            }
+            
+            inventory[itemType].forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = `${item.name} (${item.nameUr}) - ${item.price} Rs/${item.unit}`;
+                itemSelect.appendChild(option);
+            });
+            
+            // Reset form fields
+            // Use integers for juice quantities, decimals for fruits
+            if (itemType === 'juice') {
+                document.getElementById('quantity').value = '1';
+                document.getElementById('quantity').step = '1';
+                
+                // Show integer quantity buttons for juice
+                document.getElementById('quickAddBtns').innerHTML = `
+                    <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">Number of glasses:</p>
+                    <button class="btn btn-sm" data-qty="1" style="width: auto; margin: 0 5px;">1</button>
+                    <button class="btn btn-sm" data-qty="2" style="width: auto; margin: 0 5px;">2</button>
+                    <button class="btn btn-sm" data-qty="3" style="width: auto; margin: 0 5px;">3</button>
+                    <button class="btn btn-sm" data-qty="5" style="width: auto; margin: 0 5px;">5</button>
+                `;
+            } else {
+                document.getElementById('quantity').value = '1.00';
+                document.getElementById('quantity').step = '0.01';
+                
+                // Show decimal quantity buttons for fruits
+                document.getElementById('quickAddBtns').innerHTML = `
+                    <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">Quick quantities:</p>
+                    <button class="btn btn-sm" data-qty="0.25" style="width: auto; margin: 0 5px;">0.25</button>
+                    <button class="btn btn-sm" data-qty="0.5" style="width: auto; margin: 0 5px;">0.5</button>
+                    <button class="btn btn-sm" data-qty="1" style="width: auto; margin: 0 5px;">1</button>
+                    <button class="btn btn-sm" data-qty="2" style="width: auto; margin: 0 5px;">2</button>
+                `;
+            }
+            
+            // Re-add event listeners to new buttons
+            document.querySelectorAll('#quickAddBtns button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const qty = parseFloat(this.getAttribute('data-qty'));
+                    document.getElementById('quantity').value = itemType === 'juice' ? qty.toString() : qty.toFixed(2);
+                    updateTotalPrice();
+                });
+            });
+            
+            updateUnitPrice();
+            updateTotalPrice();
+            
+            // Show the form
+            document.getElementById('saleForm').style.display = 'block';
+            
+            // Focus on quantity field
+            setTimeout(() => {
+                document.getElementById('quantity').select();
+            }, 100);
+        }
+
+        // Update unit price based on selected item
+        function updateUnitPrice() {
+            const itemId = document.getElementById('itemSelect').value;
+            const item = findItemById(itemId);
+            
+            if (item) {
+                document.getElementById('unitPrice').value = item.price;
+            } else {
+                document.getElementById('unitPrice').value = '';
+            }
+        }
+
+        // Update total price based on quantity and unit price
+        function updateTotalPrice() {
+            const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+            const unitPrice = parseFloat(document.getElementById('unitPrice').value) || 0;
+            const total = quantity * unitPrice;
+            
+            document.getElementById('totalPrice').value = total.toFixed(2);
+        }
+
+        // Find item by ID from inventory
+        function findItemById(id) {
+            if (!id) return null;
+            
+            // Check in fruits
+            const fruit = inventory.fruit.find(item => item.id === id);
+            if (fruit) return fruit;
+            
+            // Check in juices
+            const juice = inventory.juice.find(item => item.id === id);
+            if (juice) return juice;
+            
+            return null;
+        }
+
+        // Add a new sale
+        function addSale() {
+            const addSaleBtn = document.getElementById('addSaleBtn');
+            const originalBtnHtml = addSaleBtn.innerHTML;
+            
+            // Show loading state
+            addSaleBtn.innerHTML = '<span class="loading"></span> Processing...';
+            addSaleBtn.disabled = true;
+            
+            const itemId = document.getElementById('itemSelect').value;
+            const quantity = parseFloat(document.getElementById('quantity').value);
+            const unitPrice = parseFloat(document.getElementById('unitPrice').value);
+            const totalPrice = parseFloat(document.getElementById('totalPrice').value);
+            
+            // Validate input
+            if (!itemId || isNaN(quantity) || quantity <= 0 || isNaN(unitPrice) || unitPrice <= 0) {
+                showNotification('Please fill all fields correctly', 'error');
+                addSaleBtn.innerHTML = originalBtnHtml;
+                addSaleBtn.disabled = false;
+                return;
+            }
+            
+            const item = findItemById(itemId);
+            if (!item) {
+                showNotification('Item not found', 'error');
+                addSaleBtn.innerHTML = originalBtnHtml;
+                addSaleBtn.disabled = false;
+                return;
+            }
+            
+            // Create sale object
+            const sale = {
+                id: generateId(),
+                timestamp: new Date().toISOString(),
+                itemId: itemId,
+                itemName: item.name,
+                itemNameUr: item.nameUr,
+                type: currentItemType,
+                quantity: quantity,
+                unit: item.unit,
+                unitPrice: unitPrice,
+                totalPrice: totalPrice
+            };
+            
+            // Add to sales array
+            sales.push(sale);
+            
+            // Save to localStorage
+            localStorage.setItem('sales', JSON.stringify(sales));
+            
+            // Update UI
+            document.getElementById('saleForm').style.display = 'none';
+            updateSalesTable();
+            updateSummary();
+            
+            // Reset button state
+            addSaleBtn.innerHTML = originalBtnHtml;
+            addSaleBtn.disabled = false;
+            
+            // Add animation to the summary card
+            const summaryCard = document.querySelector('.total-summary');
+            summaryCard.classList.add('pulse');
+            
+            setTimeout(() => {
+                summaryCard.classList.remove('pulse');
+            }, 2000);
+            
+            showNotification(`Sale added: ${item.name} - ${quantity} ${item.unit}`);
+            
+            // After adding a sale, show the form again after a short delay (no popup)
+            setTimeout(() => {
+                showSaleForm(currentItemType);
+            }, 500);
+        }
+
+        // Add a new inventory item
+        function addNewItem() {
+            const type = document.getElementById('itemType').value;
+            const nameEn = document.getElementById('itemNameEn').value.trim();
+            let nameUr = document.getElementById('itemNameUr').value.trim();
+            const unit = document.getElementById('itemUnit').value;
+            const price = parseFloat(document.getElementById('itemPrice').value);
+            
+            // Validate input
+            if (!nameEn) {
+                showNotification('Please enter item name', 'error');
+                return;
+            }
+            
+            if (isNaN(price) || price <= 0) {
+                showNotification('Please enter a valid price (greater than 0)', 'error');
+                return;
+            }
+            
+            // Check for duplicate item names
+            const isDuplicate = inventory[type].some(item => 
+                item.name.toLowerCase() === nameEn.toLowerCase()
+            );
+            
+            if (isDuplicate) {
+                showNotification('An item with this name already exists', 'error');
+                return;
+            }
+            
+            // Auto-translate if Urdu name is empty
+            if (!nameUr) {
+                nameUr = autoTranslate(nameEn, type);
+                if (!nameUr) {
+                    showNotification('Please provide Urdu name', 'error');
+                    return;
+                }
+            }
+            
+            // Create item object
+            const item = {
+                id: type.charAt(0) + Date.now().toString(),
+                name: nameEn,
+                nameUr: nameUr,
+                unit: unit,
+                price: price
+            };
+            
+            // Add to inventory
+            inventory[type].push(item);
+            
+            // Save to localStorage
+            localStorage.setItem(`${type}Inventory`, JSON.stringify(inventory[type]));
+            
+            // Update UI
+            updateInventoryTables();
+            
+            // Reset form
+            document.getElementById('itemNameEn').value = '';
+            document.getElementById('itemNameUr').value = '';
+            document.getElementById('itemPrice').value = '';
+            
+            showNotification('Item added successfully');
+        }
+        
+        // Auto-translate English to Urdu
+        function autoTranslate(englishName, type) {
+            // Convert to lowercase for matching
+            const lowerName = englishName.toLowerCase();
+            
+            if (type === 'fruit') {
+                // Check for exact match in fruit translations
+                if (fruitTranslations[lowerName]) {
+                    return fruitTranslations[lowerName];
+                }
+                
+                // Check for partial match
+                for (const key in fruitTranslations) {
+                    if (lowerName.includes(key) || key.includes(lowerName)) {
+                        return fruitTranslations[key];
+                    }
+                }
+            } else if (type === 'juice') {
+                // Check for exact match in juice translations
+                if (juiceTranslations[lowerName]) {
+                    return juiceTranslations[lowerName];
+                }
+                
+                // Check for partial match
+                for (const key in juiceTranslations) {
+                    if (lowerName.includes(key) || key.includes(lowerName)) {
+                        return juiceTranslations[key];
+                    }
+                }
+                
+                // Try to construct juice name from fruit name
+                for (const key in fruitTranslations) {
+                    if (lowerName.includes(key)) {
+                        return fruitTranslations[key] + " کا جوس";
+                    }
+                }
+            }
+            
+            // Return null if no translation found
+            return null;
+        }
+
+        // Update inventory tables
+        function updateInventoryTables() {
+            // Update fruit inventory table
+            const fruitTableBody = document.getElementById('fruitTableBody');
+            fruitTableBody.innerHTML = '';
+            
+            inventory.fruit.forEach(item => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.nameUr}</td>
+                    <td>${item.unit}</td>
+                    <td>${item.price}</td>
+                    <td>
+                        <button class="delete-btn" data-id="${item.id}" data-type="fruit">Delete</button>
+                    </td>
+                `;
+                
+                fruitTableBody.appendChild(row);
+            });
+            
+            // Update juice inventory table
+            const juiceTableBody = document.getElementById('juiceTableBody');
+            juiceTableBody.innerHTML = '';
+            
+            inventory.juice.forEach(item => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.nameUr}</td>
+                    <td>${item.unit}</td>
+                    <td>${item.price}</td>
+                    <td>
+                        <button class="delete-btn" data-id="${item.id}" data-type="juice">Delete</button>
+                    </td>
+                `;
+                
+                juiceTableBody.appendChild(row);
+            });
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const type = this.getAttribute('data-type');
+                    deleteItem(id, type);
+                });
+            });
+        }
+
+        // Delete an inventory item
+        function deleteItem(id, type) {
+            // Check if item is used in any sale
+            const isUsed = sales.some(sale => sale.itemId === id);
+            
+            if (isUsed) {
+                showNotification("Can't delete item that has sales associated with it", 'error');
+                return;
+            }
+            
+            // Remove item from inventory
+            inventory[type] = inventory[type].filter(item => item.id !== id);
+            
+            // Save to localStorage
+            localStorage.setItem(`${type}Inventory`, JSON.stringify(inventory[type]));
+            
+            // Update UI
+            updateInventoryTables();
+            
+            showNotification('Item deleted successfully');
+        }
+
+        // Update sales table
+        function updateSalesTable() {
+            const salesTableBody = document.getElementById('salesTableBody');
+            salesTableBody.innerHTML = '';
+            
+            // Filter sales based on current filter
+            const filteredSales = salesFilter === 'all' 
+                ? sales 
+                : sales.filter(sale => sale.type === salesFilter);
+            
+            // Sort by timestamp descending (newest first)
+            filteredSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            // Check if there are sales
+            if (filteredSales.length === 0) {
+                document.getElementById('noSalesMessage').classList.remove('hidden');
+            } else {
+                document.getElementById('noSalesMessage').classList.add('hidden');
+            }
+            
+            filteredSales.forEach(sale => {
+                const row = document.createElement('tr');
+                
+                // Format timestamp
+                const date = new Date(sale.timestamp);
+                const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                // Determine row class based on sale type
+                if (sale.type === 'fruit') {
+                    row.classList.add('fruit-row');
+                } else {
+                    row.classList.add('juice-row');
+                }
+                
+                row.innerHTML = `
+                    <td>${timeStr}</td>
+                    <td>${sale.itemName} (${sale.itemNameUr})</td>
+                    <td>
+                        <span class="sale-type ${sale.type}-type">
+                            ${sale.type === 'fruit' ? 
+                                '<i class="fas fa-apple-alt"></i> Fruit' : 
+                                '<i class="fas fa-glass-whiskey"></i> Juice'}
+                        </span>
+                    </td>
+                    <td>${sale.quantity} ${sale.unit}</td>
+                    <td>${sale.unitPrice}</td>
+                    <td style="font-weight: bold;">${sale.totalPrice.toFixed(2)}</td>
+                    <td>
+                        <button class="delete-btn" data-sale-id="${sale.id}" title="Delete this sale">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        <button class="edit-btn repeat-btn" data-sale-id="${sale.id}" data-item-id="${sale.itemId}" data-type="${sale.type}" data-qty="${sale.quantity}" title="Repeat this sale">
+                            <i class="fas fa-redo-alt"></i>
+                        </button>
+                    </td>
+                `;
+                
+                salesTableBody.appendChild(row);
+            });
+            
+            // Add event listeners to buttons
+            document.querySelectorAll('.delete-btn[data-sale-id]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-sale-id');
+                    deleteSale(id);
+                });
+            });
+            
+            document.querySelectorAll('.repeat-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemId = this.getAttribute('data-item-id');
+                    const type = this.getAttribute('data-type');
+                    const quantity = parseFloat(this.getAttribute('data-qty'));
+                    
+                    // Show sale form with prefilled data
+                    showSaleForm(type);
+                    
+                    // Fill in the form
+                    document.getElementById('itemSelect').value = itemId;
+                    document.getElementById('quantity').value = quantity;
+                    
+                    // Update calculations
+                    updateUnitPrice();
+                    updateTotalPrice();
+                });
+            });
+            
+            // Apply any active search filter
+            if (document.getElementById('salesSearchInput').value.trim() !== '') {
+                filterSalesTable();
+            }
+        }
+
+        // Delete a sale
+        function deleteSale(id) {
+            // Remove sale from sales array
+            sales = sales.filter(sale => sale.id !== id);
+            
+            // Save to localStorage
+            localStorage.setItem('sales', JSON.stringify(sales));
+            
+            // Update UI
+            updateSalesTable();
+            updateSummary();
+            
+            showNotification('Sale deleted successfully');
+        }
+
+        // Update summary statistics
+        function updateSummary() {
+            // Calculate fruit sales
+            const fruitSales = sales.filter(sale => sale.type === 'fruit');
+            const fruitTotal = fruitSales.reduce((total, sale) => total + sale.totalPrice, 0);
+            
+            // Calculate juice sales
+            const juiceSales = sales.filter(sale => sale.type === 'juice');
+            const juiceTotal = juiceSales.reduce((total, sale) => total + sale.totalPrice, 0);
+            
+            // Update summary UI
+            document.getElementById('fruitItemsCount').textContent = fruitSales.length;
+            document.getElementById('fruitTotal').textContent = fruitTotal.toFixed(2);
+            
+            document.getElementById('juiceItemsCount').textContent = juiceSales.length;
+            document.getElementById('juiceTotal').textContent = juiceTotal.toFixed(2);
+            
+            document.getElementById('totalSales').textContent = sales.length;
+            document.getElementById('grandTotal').textContent = (fruitTotal + juiceTotal).toFixed(2);
+        }
+
+        // Export sales to Excel
+        function exportToExcel(automatic = false, dateStr = null) {
+            // Check if XLSX is loaded from cache or CDN
+            if (!window.XLSX) {
+                showNotification('Excel library not available. Trying to load from cache...', 'warning');
+                
+                // Try to load XLSX from CDN if online, or notify if offline
+                if (isOnline) {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+                    script.onload = function() {
+                        showNotification('Excel library loaded successfully', 'success');
+                        setTimeout(() => exportToExcel(automatic, dateStr), 500);
+                    };
+                    script.onerror = function() {
+                        showNotification('Failed to load Excel library. Please try again later.', 'error');
+                    };
+                    document.head.appendChild(script);
+                    return;
+                } else {
+                    showNotification('Cannot export to Excel while offline without cached library', 'error');
+                    return;
+                }
+            }
+
+            try {
+                // Create workbook and worksheet
+                const wb = XLSX.utils.book_new();
+                
+                // Get today's date
+                const today = dateStr ? dateStr : new Date().toLocaleDateString();
+                
+                // Add offline indicator if currently offline
+                const offlineIndicator = !isOnline ? [['(Generated Offline)']] : [];
+                
+                // Add header data
+                const header = [
+                    ['Baba Fruit and Juice - Sales Report'],
+                    ['بابا فروٹ اینڈ جوس - سیلز رپورٹ'],
+                    ...offlineIndicator,
+                    [''],
+                    ['Date:', today],
+                    ['']
+                ];
+
+                // Add fruit sales section
+                const fruitSales = sales.filter(sale => sale.type === 'fruit');
+                const fruitRows = fruitSales.map(sale => [
+                    new Date(sale.timestamp).toLocaleTimeString(),
+                    sale.itemName + ' (' + sale.itemNameUr + ')',
+                    sale.quantity,
+                    sale.unit,
+                    sale.unitPrice,
+                    sale.totalPrice
+                ]);
+                
+                const fruitTotal = fruitSales.reduce((total, sale) => total + sale.totalPrice, 0);
+                
+                // Add juice sales section
+                const juiceSales = sales.filter(sale => sale.type === 'juice');
+                const juiceRows = juiceSales.map(sale => [
+                    new Date(sale.timestamp).toLocaleTimeString(),
+                    sale.itemName + ' (' + sale.itemNameUr + ')',
+                    sale.quantity,
+                    sale.unit,
+                    sale.unitPrice,
+                    sale.totalPrice
+                ]);
+                
+                const juiceTotal = juiceSales.reduce((total, sale) => total + sale.totalPrice, 0);
+                
+                // Combine data for the worksheet
+                const fruitHeader = [
+                    ['Fruit Sales (پھلوں کی فروخت)'],
+                    ['Time', 'Item', 'Quantity', 'Unit', 'Unit Price', 'Total']
+                ];
+                
+                const juiceHeader = [
+                    [''],
+                    ['Juice Sales (جوس کی فروخت)'],
+                    ['Time', 'Item', 'Quantity', 'Unit', 'Unit Price', 'Total']
+                ];
+                
+                const summary = [
+                    [''],
+                    ['Summary (خلاصہ)'],
+                    ['Fruit Sales Total:', '', '', '', '', fruitTotal],
+                    ['Juice Sales Total:', '', '', '', '', juiceTotal],
+                    ['Grand Total:', '', '', '', '', fruitTotal + juiceTotal],
+                    [''],
+                    ['Created by Hammad Janjua - Developer Contact: dev@hammadjanjua.com']
+                ];
+                
+                // Combine all sections
+                const allData = [
+                    ...header,
+                    ...fruitHeader,
+                    ...fruitRows,
+                    ...juiceHeader,
+                    ...juiceRows,
+                    ...summary
+                ];
+                
+                // Create the worksheet
+                const ws = XLSX.utils.aoa_to_sheet(allData);
+                
+                // Add to workbook
+                XLSX.utils.book_append_sheet(wb, ws, 'Sales Report');
+                
+                // Export to file
+                try {
+                    const fileName = `Baba_Fruit_Juice_Sales_${today.replace(/\//g, '-')}.xlsx`;
+                    XLSX.writeFile(wb, fileName);
+                    
+                    if (!automatic) {
+                        showNotification('Excel report exported successfully');
+                    }
+                } catch (fileError) {
+                    console.error('Error writing Excel file:', fileError);
+                    showNotification('Error saving the Excel file. Please try again.', 'error');
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error exporting to Excel:', error);
+                if (!automatic) {
+                    showNotification('Error exporting to Excel', 'error');
+                }
+                return false;
+            }
+        }
+
+        // Export sales to PDF using HTML-to-PDF approach
+        function exportToPDF() {
+            try {
+                if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+                    showNotification('PDF libraries not loaded', 'error');
+                    return;
+                }
+                
+                // Show loading notification
+                showNotification('Generating PDF, please wait...', 'success', 5000);
+                
+                // Create a hidden div for PDF content
+                const pdfContainer = document.createElement('div');
+                pdfContainer.style.position = 'absolute';
+                pdfContainer.style.left = '-9999px';
+                pdfContainer.style.fontFamily = "'Amiri', 'Noto Nastaliq Urdu', serif";
+                document.body.appendChild(pdfContainer);
+                
+                // Get today's date
+                const today = new Date().toLocaleDateString();
+                
+                // Get sales data
+                const fruitSales = sales.filter(sale => sale.type === 'fruit');
+                const juiceSales = sales.filter(sale => sale.type === 'juice');
+                const fruitTotal = fruitSales.reduce((total, sale) => total + sale.totalPrice, 0);
+                const juiceTotal = juiceSales.reduce((total, sale) => total + sale.totalPrice, 0);
+                const grandTotal = fruitTotal + juiceTotal;
+                
+                // Generate HTML content for the PDF
+                pdfContainer.innerHTML = `
+                    <div style="width: 700px; padding: 20px; font-family: 'Amiri', 'Noto Nastaliq Urdu', serif;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h1 style="margin: 0; color: #ff6b35; font-size: 24px;">Baba Fruit and Juice - Sales Report</h1>
+                            <h2 style="margin: 5px 0; font-size: 20px; color: #333;">بابا فروٹ اینڈ جوس - سیلز رپورٹ</h2>
+                            <p style="margin: 10px 0;">Date: ${today}</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="border-bottom: 2px solid #4CAF50; padding-bottom: 5px; color: #4CAF50;">
+                                Fruit Sales (پھلوں کی فروخت)
+                            </h3>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background-color: #e8f5e9;">
+                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Time</th>
+                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Item</th>
+                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Quantity</th>
+                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Unit Price (Rs)</th>
+                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Total (Rs)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${fruitSales.length === 0 ? 
+                                        '<tr><td colspan="5" style="border: 1px solid #ddd; padding: 8px; text-align: center;">No fruit sales recorded</td></tr>' : 
+                                        fruitSales.map(sale => `
+                                            <tr>
+                                                <td style="border: 1px solid #ddd; padding: 8px;">${new Date(sale.timestamp).toLocaleTimeString()}</td>
+                                                <td style="border: 1px solid #ddd; padding: 8px;">${sale.itemName} (${sale.itemNameUr})</td>
+                                                <td style="border: 1px solid #ddd; padding: 8px;">${sale.quantity} ${sale.unit}</td>
+                                                <td style="border: 1px solid #ddd; padding: 8px;">${sale.unitPrice}</td>
+                                                <td style="border: 1px solid #ddd; padding: 8px;">${sale.totalPrice.toFixed(2)}</td>
+                                            </tr>
+                                        `).join('')
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="border-bottom: 2px solid #FF9800; padding-bottom: 5px; color: #FF9800;">
+                                Juice Sales (جوس کی فروخت)
+                            </h3>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background-color: #fff3e0;">
+                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Time</th>
+                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Item</th>
+                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Quantity</th>
+                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Unit Price (Rs)</th>
+                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Total (Rs)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${juiceSales.length === 0 ? 
+                                        '<tr><td colspan="5" style="border: 1px solid #ddd; padding: 8px; text-align: center;">No juice sales recorded</td></tr>' : 
+                                        juiceSales.map(sale => `
+                                            <tr>
+                                                <td style="border: 1px solid #ddd; padding: 8px;">${new Date(sale.timestamp).toLocaleTimeString()}</td>
+                                                <td style="border: 1px solid #ddd; padding: 8px;">${sale.itemName} (${sale.itemNameUr})</td>
+                                                <td style="border: 1px solid #ddd; padding: 8px;">${sale.quantity} ${sale.unit}</td>
+                                                <td style="border: 1px solid #ddd; padding: 8px;">${sale.unitPrice}</td>
+                                                <td style="border: 1px solid #ddd; padding: 8px;">${sale.totalPrice.toFixed(2)}</td>
+                                            </tr>
+                                        `).join('')
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div>
+                            <h3 style="border-bottom: 2px solid #ff6b35; padding-bottom: 5px; color: #ff6b35;">
+                                Summary (خلاصہ)
+                            </h3>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tbody>
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: bold;">Fruit Sales Total:</td>
+                                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">Rs. ${fruitTotal.toFixed(2)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: bold;">Juice Sales Total:</td>
+                                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">Rs. ${juiceTotal.toFixed(2)}</td>
+                                    </tr>
+                                    <tr style="background-color: #f5f5f5;">
+                                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: bold;">Grand Total:</td>
+                                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">Rs. ${grandTotal.toFixed(2)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="margin-top: 20px; text-align: right; font-style: italic; font-size: 12px; color: #888;">
+                            Created by Hammad Janjua
+                        </div>
+                    </div>
+                `;
+                
+                // Use html2canvas to render the HTML content to an image
+                html2canvas(pdfContainer, {
+                    scale: 1,
+                    useCORS: true,
+                    allowTaint: true,
+                    onclone: function(clonedDoc) {
+                        const container = clonedDoc.querySelector('div');
+                        container.style.position = 'relative';
+                        container.style.left = '0';
+                        container.style.top = '0';
+                    }
+                }).then(canvas => {
+                    // Create PDF
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'pt', 'a4');
+                    
+                    // Get dimensions
+                    const imgData = canvas.toDataURL('image/png');
+                    const imgWidth = 595.28; // A4 width in pts
+                    const pageHeight = 841.89; // A4 height in pts
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    // Add image to PDF, handling multi-page if needed
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    
+                    while (heightLeft >= 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+                    
+                    // Save the PDF
+                    const fileName = `Baba_Fruit_Juice_Sales_${today.replace(/\//g, '-')}.pdf`;
+                    pdf.save(fileName);
+                    
+                    // Remove the temporary element
+                    document.body.removeChild(pdfContainer);
+                    
+                    showNotification('PDF report exported successfully');
+                }).catch(error => {
+                    console.error('Error rendering PDF:', error);
+                    showNotification('Error creating PDF', 'error');
+                    document.body.removeChild(pdfContainer);
+                });
+                
+            } catch (error) {
+                console.error('Error exporting to PDF:', error);
+                showNotification('Error exporting to PDF', 'error');
+            }
+        }
+
+        // Preview report in a modal
+        function previewReport() {
+            try {
+                showNotification('Generating report preview...', 'success', 2000);
+                
+                // Create modal for preview if it doesn't exist
+                let previewModal = document.getElementById('previewReportModal');
+                if (!previewModal) {
+                    previewModal = document.createElement('div');
+                    previewModal.id = 'previewReportModal';
+                    document.body.appendChild(previewModal);
+                }
+                
+                // Show loading message
+                previewModal.style.display = 'block';
+                previewModal.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                        <div style="background: white; border-radius: 10px; padding: 20px; text-align: center;">
+                            <div class="loading" style="width: 50px; height: 50px; margin: 0 auto 20px auto; border: 3px solid rgba(0,0,0,.2); border-top-color: #ff6b35;"></div>
+                            <p style="color: #333;">Generating preview...</p>
+                        </div>
+                    </div>
+                `;
+                
+                // Get today's date
+                const today = new Date().toLocaleDateString();
+                
+                // Get sales data
+                const fruitSales = sales.filter(sale => sale.type === 'fruit');
+                const juiceSales = sales.filter(sale => sale.type === 'juice');
+                const fruitTotal = fruitSales.reduce((total, sale) => total + sale.totalPrice, 0);
+                const juiceTotal = juiceSales.reduce((total, sale) => total + sale.totalPrice, 0);
+                const grandTotal = fruitTotal + juiceTotal;
+                
+                // Create report content
+                const reportContent = `
+                    <div style="background: white; width: 90%; max-width: 800px; margin: 20px auto; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative;">
+                        <button id="closePreviewBtn" style="position: absolute; top: 10px; right: 10px; background: #f44336; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        
+                        <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #ff6b35; padding-bottom: 10px;">
+                            <h1 style="margin: 0; color: #ff6b35; font-size: 24px;">Baba Fruit and Juice - Sales Report</h1>
+                            <h2 style="margin: 5px 0; font-size: 20px; color: #333; font-family: 'Noto Nastaliq Urdu', serif;">بابا فروٹ اینڈ جوس - سیلز رپورٹ</h2>
+                            <p style="margin: 10px 0;">Date: ${today}</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="border-bottom: 2px solid #4CAF50; padding-bottom: 5px; color: #4CAF50;">
+                                <i class="fas fa-apple-alt"></i> Fruit Sales (پھلوں کی فروخت)
+                            </h3>
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background-color: #e8f5e9;">
+                                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Time</th>
+                                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Item</th>
+                                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Quantity</th>
+                                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Unit Price (Rs)</th>
+                                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Total (Rs)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${fruitSales.length === 0 ? 
+                                            '<tr><td colspan="5" style="border: 1px solid #ddd; padding: 8px; text-align: center;">No fruit sales recorded</td></tr>' : 
+                                            fruitSales.map(sale => `
+                                                <tr>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;">${new Date(sale.timestamp).toLocaleTimeString()}</td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;">${sale.itemName} (${sale.itemNameUr})</td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;">${sale.quantity} ${sale.unit}</td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;">${sale.unitPrice}</td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;">${sale.totalPrice.toFixed(2)}</td>
+                                                </tr>
+                                            `).join('')
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="border-bottom: 2px solid #FF9800; padding-bottom: 5px; color: #FF9800;">
+                                <i class="fas fa-glass-whiskey"></i> Juice Sales (جوس کی فروخت)
+                            </h3>
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background-color: #fff3e0;">
+                                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Time</th>
+                                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Item</th>
+                                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Quantity</th>
+                                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Unit Price (Rs)</th>
+                                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Total (Rs)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${juiceSales.length === 0 ? 
+                                            '<tr><td colspan="5" style="border: 1px solid #ddd; padding: 8px; text-align: center;">No juice sales recorded</td></tr>' : 
+                                            juiceSales.map(sale => `
+                                                <tr>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;">${new Date(sale.timestamp).toLocaleTimeString()}</td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;">${sale.itemName} (${sale.itemNameUr})</td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;">${sale.quantity} ${sale.unit}</td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;">${sale.unitPrice}</td>
+                                                    <td style="border: 1px solid #ddd; padding: 8px;">${sale.totalPrice.toFixed(2)}</td>
+                                                </tr>
+                                            `).join('')
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 style="border-bottom: 2px solid #ff6b35; padding-bottom: 5px; color: #ff6b35;">
+                                <i class="fas fa-calculator"></i> Summary (خلاصہ)
+                            </h3>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tbody>
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 12px; font-weight: bold;">Fruit Sales Total:</td>
+                                        <td style="border: 1px solid #ddd; padding: 12px; text-align: right;">Rs. ${fruitTotal.toFixed(2)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 12px; font-weight: bold;">Juice Sales Total:</td>
+                                        <td style="border: 1px solid #ddd; padding: 12px; text-align: right;">Rs. ${juiceTotal.toFixed(2)}</td>
+                                    </tr>
+                                    <tr style="background-color: #f5f5f5;">
+                                        <td style="border: 1px solid #ddd; padding: 12px; font-weight: bold; font-size: 1.1em;">Grand Total:</td>
+                                        <td style="border: 1px solid #ddd; padding: 12px; text-align: right; font-weight: bold; font-size: 1.1em;">Rs. ${grandTotal.toFixed(2)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button id="downloadPreviewBtn" style="background: #4CAF50; color: white; border: none; border-radius: 5px; padding: 10px 20px; font-size: 16px; cursor: pointer; margin-right: 10px;">
+                                <i class="fas fa-download"></i> Download PDF
+                            </button>
+                            <button id="printPreviewBtn" style="background: #2196F3; color: white; border: none; border-radius: 5px; padding: 10px 20px; font-size: 16px; cursor: pointer;">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                        
+                        <div style="margin-top: 20px; text-align: right; font-style: italic; font-size: 12px; color: #888;">
+                            Created by Hammad Janjua
+                        </div>
+                    </div>
+                `;
+                
+                // Update modal content
+                setTimeout(() => {
+                    previewModal.innerHTML = reportContent;
+                    
+                    // Add event listeners
+                    document.getElementById('closePreviewBtn').addEventListener('click', function() {
+                        previewModal.style.display = 'none';
+                    });
+                    
+                    document.getElementById('downloadPreviewBtn').addEventListener('click', function() {
+                        exportToPDF();
+                    });
+                    
+                    document.getElementById('printPreviewBtn').addEventListener('click', function() {
+                        // Get modal content and create print window
+                        const printContent = document.querySelector('#previewReportModal > div').cloneNode(true);
+                        // Remove buttons
+                        printContent.querySelector('#closePreviewBtn').remove();
+                        const actionButtons = printContent.querySelector('div:last-child');
+                        if (actionButtons.contains(printContent.querySelector('#downloadPreviewBtn'))) {
+                            actionButtons.remove();
+                        }
+                        
+                        // Create print window
+                        const printWindow = window.open('', '_blank', 'height=600,width=800');
+                        printWindow.document.write('<html><head><title>Baba Fruit and Juice - Sales Report</title>');
+                        
+                        // Add styles
+                        printWindow.document.write(`
+                            <style>
+                                body { font-family: Arial, sans-serif; }
+                                @media print {
+                                    body { padding: 20px; }
+                                    button { display: none !important; }
+                                }
+                            </style>
+                        `);
+                        
+                        // Add Urdu font
+                        printWindow.document.write('<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">');
+                        printWindow.document.write('</head><body>');
+                        printWindow.document.write(printContent.outerHTML);
+                        printWindow.document.write('<div style="margin-top: 20px; text-align: right; font-style: italic; font-size: 12px; color: #888;">Created by Hammad Janjua</div>');
+                        printWindow.document.write('</body></html>');
+                        printWindow.document.close();
+                        
+                        // Wait for resources to load before printing
+                        printWindow.onload = function() {
+                            printWindow.focus();
+                            setTimeout(function() {
+                                printWindow.print();
+                            }, 500);
+                        };
+                    });
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error generating report preview:', error);
+                showNotification('Error generating preview', 'error');
+            }
+        }
+        
+        // Generate a unique ID
+        function generateId() {
+            return 's' + Date.now().toString();
+        }
+
+        // Show notification with optional custom duration
+        function showNotification(message, type = 'success', duration = 3000) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.backgroundColor = type === 'success' ? '#4CAF50' : '#f44336';
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, duration);
+        }
+    </script>
+</body>
+</html>
